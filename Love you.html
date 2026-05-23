@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For you</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #08080a;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Courier New', Courier, monospace;
+            touch-action: manipulation;
+        }
+
+        #game-screen {
+            text-align: center;
+            z-index: 10;
+            width: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #question {
+            font-size: 24px;
+            margin-bottom: 30px;
+            text-shadow: 0 0 10px #ff2a74;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 18px;
+            font-family: inherit;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.1s;
+        }
+
+        #yes-btn {
+            background-color: #ff2a74;
+            color: white;
+            box-shadow: 0 0 15px #ff2a74;
+        }
+
+        #yes-btn:active {
+            transform: scale(0.95);
+        }
+
+        #no-btn {
+            background-color: #333;
+            color: white;
+            position: relative;
+        }
+
+        #heart-screen {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #final-message {
+            position: absolute;
+            z-index: 100;
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 15px #ff2a74, 0 0 30px #ff2a74;
+            text-align: center;
+            pointer-events: none;
+            animation: fadeIn 3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        #heart-container {
+            position: relative;
+            width: 600px;
+            height: 600px;
+            animation: heartbeat 1.3s infinite cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        .text-word {
+            position: absolute;
+            font-weight: bold;
+            white-space: nowrap;
+            user-select: none;
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(0.95); }
+            15% { transform: scale(1.1); }
+            30% { transform: scale(1.02); }
+            45% { transform: scale(1.15); }
+            100% { transform: scale(0.95); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        @media (max-width: 600px) {
+            #heart-container {
+                transform: scale(0.55);
+                transform-origin: center;
+            }
+            @keyframes heartbeat {
+                0% { transform: scale(0.52); }
+                15% { transform: scale(0.60); }
+                30% { transform: scale(0.56); }
+                45% { transform: scale(0.63); }
+                100% { transform: scale(0.52); }
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-screen">
+        <div id="question">Do you love me?</div>
+        <button id="yes-btn" class="btn">Yes ❤️</button>
+        <button id="no-btn" class="btn">No</button>
+    </div>
+
+    <div id="heart-screen">
+        <div id="final-message">I love you too!</div>
+        <div id="heart-container"></div>
+    </div>
+
+    <script>
+        const noBtn = document.getElementById('no-btn');
+        const yesBtn = document.getElementById('yes-btn');
+        const gameScreen = document.getElementById('game-screen');
+        const heartScreen = document.getElementById('heart-screen');
+
+        function moveButton(e) {
+            e.preventDefault();
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+            
+            const maxX = window.innerWidth - btnWidth - 20;
+            const maxY = window.innerHeight - btnHeight - 20;
+            
+            const randomX = Math.max(10, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(10, Math.floor(Math.random() * maxY));
+
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = randomX + 'px';
+            noBtn.style.top = randomY + 'px';
+        }
+
+        noBtn.addEventListener('mouseover', moveButton);
+        noBtn.addEventListener('touchstart', moveButton, {passive: false});
+
+        yesBtn.addEventListener('click', () => {
+            gameScreen.style.display = 'none';
+            heartScreen.style.display = 'flex';
+            generateHeart();
+        });
+
+        function generateHeart() {
+            const container = document.getElementById('heart-container');
+            const phrases = ["i love you", "my sweetheart"];
+            
+            function getHeartPoint(t) {
+                const x = 16 * Math.pow(Math.sin(t), 3);
+                const y = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+                return { x, y };
+            }
+
+            const layers = [
+                { scale: 16, count: 180 },
+                { scale: 14, count: 130 },
+                { scale: 11, count: 90 },
+                { scale: 8,  count: 60 },
+                { scale: 5,  count: 30 },
+                { scale: 2,  count: 10 },
+                { scale: 0.2, count: 1 }
+            ];
+
+            const colors = ['#ff2a74', '#ff5394', '#ff0055', '#ff7da7', '#e6004c'];
+
+            layers.forEach(layer => {
+                for (let i = 0; i < layer.count; i++) {
+                    const t = (i / layer.count) * 2 * Math.PI;
+                    const { x, y } = getHeartPoint(t);
+                    
+                    const posX = 300 + x * layer.scale;
+                    const posY = 270 - y * layer.scale;
+
+                    const span = document.createElement('span');
+                    span.className = 'text-word';
+                    span.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+                    
+                    span.style.left = `${posX}px`;
+                    span.style.top = `${posY}px`;
+                    
+                    const angle = (Math.random() - 0.5) * 25;
+                    span.style.transform = `translate(-50%, -50%) rotate(${angle}deg)`;
+                    span.style.fontSize = `${9 + Math.random() * 4}px`;
+                    
+                    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                    span.style.color = randomColor;
+                    span.style.textShadow = `0 0 4px ${randomColor}, 0 0 10px ${randomColor}`;
+                    
+                    span.style.animation = `pulse ${1.5 + Math.random() * 1.5}s infinite ease-in-out`;
+                    span.style.animationDelay = `${Math.random() * 2}s`;
+
+                    container.appendChild(span);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
